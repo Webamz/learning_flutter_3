@@ -4,21 +4,22 @@ import 'package:learning_flutter_2/components/image_tile.dart';
 import 'package:learning_flutter_2/components/my_button.dart';
 import 'package:learning_flutter_2/components/my_textfield.dart';
 
-class LoginPage extends StatefulWidget {
+class RegisterPage extends StatefulWidget {
   final Function()? onTap;
-  const LoginPage({super.key, required this.onTap});
+  const RegisterPage({super.key, required this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final emailController = TextEditingController();
 
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   //sign in user method
-  void signUserIn() async {
+  void signUserUp() async {
     //show loading circle
     showDialog(
       context: context,
@@ -30,16 +31,21 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailController.text, password: passwordController.text);
+      if (passwordController.text == confirmPasswordController.text) {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: emailController.text, password: passwordController.text);
+      } else {
+        //show error messagw
+        errorMessage("Passwords don't match");
+      }
     } on FirebaseAuthException catch (e) {
       // ignore: use_build_context_synchronously
       Navigator.pop(context);
       // wrong email
       if (e.code == 'user-not-found') {
-        wrongEmailMessage();
+        errorMessage("Wrong email/password");
       } else if (e.code == 'wrong-password') {
-        wrongEmailMessage();
+        errorMessage("Wrong email/password");
       }
     }
     // pop the circle
@@ -47,15 +53,15 @@ class _LoginPageState extends State<LoginPage> {
     Navigator.pop(context);
   }
 
-  void wrongEmailMessage() {
+  void errorMessage(String msg) {
     showDialog(
       context: context,
       builder: (context) {
-        return const AlertDialog(
+        return AlertDialog(
           backgroundColor: Colors.deepPurple,
           title: Center(
             child: Text(
-              'Incorrect email or password',
+              msg,
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -83,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                   height: 50,
                 ),
                 Text(
-                  "Welcome back you've been missed!",
+                  "Let's create an account",
                   style: TextStyle(
                     color: Colors.grey[700],
                     fontSize: 16,
@@ -126,18 +132,11 @@ class _LoginPageState extends State<LoginPage> {
 
                 const SizedBox(height: 10),
 
-                //forgot password
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        "Forgot Password",
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
+                //confirm password textfield
+                MyTextField(
+                  controller: confirmPasswordController,
+                  hintText: 'Confirm Password',
+                  obscureText: true,
                 ),
 
                 const SizedBox(height: 10),
@@ -145,8 +144,8 @@ class _LoginPageState extends State<LoginPage> {
                 // sign in button
 
                 MyButton(
-                  onTap: signUserIn,
-                  text:"Sign In",
+                  onTap: signUserUp,
+                  text: "Register",
                 ),
 
                 const SizedBox(
@@ -203,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "No account? ",
+                          "Already have an account? ",
                           style: TextStyle(color: Colors.grey[700]),
                         ),
                         const SizedBox(
@@ -211,7 +210,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         GestureDetector(
                           child: const Text(
-                            "Register now",
+                            "Login now",
                             style: TextStyle(
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold),
