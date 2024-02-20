@@ -1,16 +1,62 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:learning_flutter_2/components/image_tile.dart';
 import 'package:learning_flutter_2/components/my_button.dart';
 import 'package:learning_flutter_2/components/my_textfield.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   LoginPage({super.key});
 
-  final usernameController = TextEditingController();
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+
   final passwordController = TextEditingController();
 
   //sign in user method
-  void signUserIn() {}
+  void signUserIn() async {
+    //show loading circle
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      },
+    );
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text, password: passwordController.text);
+    } on FirebaseAuthException catch (e) {
+      // ignore: use_build_context_synchronously
+      Navigator.pop(context);
+      // wrong email
+      if (e.code == 'user-not-found') {
+        wrongEmailMessage();
+      } else if (e.code == 'wrong-password') {
+        wrongEmailMessage();
+      }
+    }
+    // pop the circle
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context);
+  }
+
+  void wrongEmailMessage() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const AlertDialog(
+          title: Text('Incorrect email or password'),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,10 +102,10 @@ class LoginPage extends StatelessWidget {
                 ),
               ),
 
-              //username textfield
+              //email textfield
               MyTextField(
-                controller: usernameController,
-                hintText: 'Username',
+                controller: emailController,
+                hintText: 'Email',
                 obscureText: false,
               ),
 
@@ -144,7 +190,7 @@ class LoginPage extends StatelessWidget {
                   ),
 
                   // not a member register
-                 Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(

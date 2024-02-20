@@ -58,7 +58,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   final pages = [
-    const HomePage(),
+    HomePage(),
     const ContactsPage(),
     const CalculatorScreen(),
     const ProfilePage(),
